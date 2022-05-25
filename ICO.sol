@@ -1,65 +1,39 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.4.24;
+pragma solidity >=0.5.0 <0.9.0;
 
-import "./ERC20.sol";
+import "./MyERC20.sol";
 
+contract InitialCoinOffering is NotLuna{
+    uint public supply = 5000;
+    uint public startBlock;
+    uint public endBlock;
+    uint public unitPrice = 0.001 ether;
+    bool public open = true;
 
-contract NotLuna is ERC20{
+    constructor(){
+        startBlock = block.timestamp;
+        endBlock = block.timestamp + 2 weeks;
+    }
     
-    string public name = "NotLuna";
-    string public symbol = "NL";
+    function buyToken(uint _value) public payable returns (bool success) {
+        require(open);
+        require(supply >= _value);
+        require(balances[msg.sender].balance + _value <= 500);
+        require(_value * unitPrice <= msg.value);
 
-    uint public decimals = 10000;
-    uint public totalSupply;
+        // Lowering supply for ICO and increasing balance for owner
 
-    address creator;
+        supply -= _value;
+        balances[msg.sender].balance += _value;
 
-    struct Owner {
-        address owner;
-        uint balance;
-        mapping(address => uint) approved;
-    }
+        // Returning the change
+        payable(msg.sender).transfer(msg.value - _value * unitPrice);
 
-    mapping(address => Owner) balances;
-
-    constructor(uint _totalSupply) public {
-        creator = msg.sender;
-        totalSupply = _totalSupply;
-    }
-
-    function balanceOf(address _owner) public view returns (uint256 balance){
-        balance = balances[_owner].balance;
-    }
-
-    function transfer(address _to, uint _value) public returns(bool success) {
-        require(_value <= balanceOf(msg.sender));
-        balances[msg.sender].balance -= _value;
-        balances[_to].balance += _value;
-
-        emit Transfer(msg.sender, _to, _value);
         success = true;
     }
 
-    function transferFrom(address _from, address _to, uint256 _value) public returns (bool success){
-        require(balances[_from].approved[msg.sender] >= _value);
-        require(balances[_from].balance >= _value);
-
-        balances[_from].balance -= _value;
-        balances[_to].balance += _value;
-
-        balances[_from].approved[msg.sender] -= _value;
-
-        emit Transfer(_from, _to, _value);
-        success = true;
-    }
-
-    function approve(address _spender, uint256 _value) public returns (bool success){
-        balances[msg.sender].approved[_spender] = _value;
-        success = true;
-    }
-
-    function allowance(address _owner, address _spender) public view returns (uint256 remaining){
-        remaining = balances[_owner].approved[_spender];
+    function closeOffering() public onlyCreator(msg.sender){
+        open = false;
     }
 }
