@@ -27,8 +27,8 @@ contract InitialCoinOffering is NotLuna{
         supply -= _value;
         balances[msg.sender].balance += _value;
 
-        // Returning the change
-        payable(msg.sender).transfer(msg.value - _value * unitPrice);
+        // Returning the change to the owner
+        payable(msg.sender).transfer(msg.value - (_value * unitPrice));
 
         success = true;
     }
