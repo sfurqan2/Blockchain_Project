@@ -30,7 +30,6 @@ contract AuctionFactory {
         auction.end = block.timestamp + end;
         auction.highestBidder = address(0);
         auction.largestBid = 0;
-        
         auction.secondLargestBid = 0;
 
         emit AuctionCreated(auction.id, auction.owner, auction.start, auction.end);
