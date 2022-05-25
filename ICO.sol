@@ -18,6 +18,7 @@ contract InitialCoinOffering is NotLuna{
     
     function buyToken(uint _value) public payable returns (bool success) {
         require(open);
+        require(endBlock >= block.timestamp);
         require(supply >= _value);
         require(balances[msg.sender].balance + _value <= 500);
         require(_value * unitPrice <= msg.value);
